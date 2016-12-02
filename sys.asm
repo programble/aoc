@@ -39,12 +39,8 @@
 
 SYS_READ   equ 0
 SYS_WRITE  equ 1
-SYS_GETPID equ 39
 SYS_EXIT   equ 60
-SYS_KILL   equ 62
 
 FD_STDIN  equ 0
 FD_STDOUT equ 1
 FD_STDERR equ 2
-
-SIG_ABRT equ 6
