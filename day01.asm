@@ -1,4 +1,5 @@
 %include "sys.asm"
+%include "lib.asm"
 
 %define rPosX r8
 %define rPosY r9
@@ -65,5 +66,10 @@ _start:
   xor rPosY, rax
   sub rPosY, rax
 
-  lea rax, [rPosX + rPosY]
+  lea rdi, [rPosX + rPosY]
+  call hex32
+  push rax
+  syscall SYS_WRITE, FD_STDOUT, rsp, 8
+
+  xor rax, rax
 syscall SYS_EXIT, rax

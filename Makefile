@@ -5,7 +5,7 @@ all: $(BINS)
 %: %.o
 	ld -o $@ $<
 
-%.o: %.asm sys.asm
+%.o: %.asm sys.asm lib.asm
 	nasm -f elf64 -o $@ $<
 
 clean:
