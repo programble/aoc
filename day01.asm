@@ -1,72 +1,69 @@
 %include "sys.asm"
+
+%define rPosX r8
+%define rPosY r9
+%define rDirX r10
+%define rDirY r11
+
 global _start
-
-section .bss
-input: resb 1
-
-section .data
-position:
-  .x: dd 0
-  .y: dd 0
-direction:
-  .x: dd 0
-  .y: dd -1
-
-section .text
 _start:
+  sub rsp, 4096
+  syscall SYS_READ, FD_STDIN, rsp, 4096
+  mov rdi, rax ;; Length.
+  xor rcx, rcx ;; Index.
+
+  xor rPosX, rPosX
+  xor rPosY, rPosY
+  xor rDirX, rDirX
+  mov rDirY, -1 ;; North.
+
   .loopTurn:
-    syscall SYS_READ, FD_STDIN, input, 1
-    test rax, rax
-    jz .breakTurn
+    cmp byte [rsp + rcx], 'L'
+    jne .right
+    .left: ;; L(dx, dy) = (dy, -dx)
+      neg rDirX
+      jmp .swap
+    .right: ;; R(dx, dy) = (-dy, dx)
+      neg rDirY
+    .swap:
+    xchg rDirX, rDirY
 
-    cmp byte [input], 'R'
-    jne .elseLeft
-    .thenRight:
-      rol qword [direction], 32
-      neg dword [direction.x]
-      jmp .endLeft
-    .elseLeft:
-      neg dword [direction.x]
-      rol qword [direction], 32
-    .endLeft:
-
-    xor r12, r12
+    xor rax, rax
     .loopDigit:
-      syscall SYS_READ, FD_STDIN, input, 1
-      test rax, rax
-      jz .breakDigit
-      movzx rax, byte [input]
+      inc rcx
+      movzx rdx, byte [rsp + rcx]
+      cmp dl, '0'
+      jb .breakDigit
 
-      cmp al, ','
-      je .breakDigit
-
-      shl r12, 1
-      lea r12, [r12 + r12 * 4 - '0']
-      add r12, rax
+      ;; rax = rax * 10 + rdx - '0'
+      shl rax, 1
+      lea rax, [rax + rax * 4 - '0']
+      add rax, rdx
     jmp .loopDigit
     .breakDigit:
+    add rcx, 2 ;; Discard comma and space.
 
-    syscall SYS_READ, FD_STDIN, input, 1
+    mov rdx, rax
+    imul rdx, rDirX
+    add rPosX, rdx
 
-    mov eax, r12d
-    imul eax, [direction.x]
-    add [position.x], eax
-    imul r12d, [direction.y]
-    add [position.y], r12d
-  jmp .loopTurn
-  .breakTurn:
+    mov rdx, rax
+    imul rdx, rDirY
+    add rPosY, rdx
 
-  mov eax, [position.x]
-  sar eax, 31
-  mov ecx, eax
-  xor ecx, [position.x]
-  sub ecx, eax
+  cmp rcx, rdi
+  jb .loopTurn
 
-  mov eax, [position.y]
-  sar eax, 31
-  mov edx, eax
-  xor edx, [position.y]
-  sub edx, eax
+  ;; abs(x) = (x ^ (x >> 63)) - (x >> 63)
+  mov rax, rPosX
+  sar rax, 63
+  xor rPosX, rax
+  sub rPosX, rax
 
-  add ecx, edx
-syscall SYS_EXIT, rcx
+  mov rax, rPosY
+  sar rax, 63
+  xor rPosY, rax
+  sub rPosY, rax
+
+  lea rax, [rPosX + rPosY]
+syscall SYS_EXIT, rax
