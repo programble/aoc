@@ -66,10 +66,11 @@ _start:
   xor rPosY, rax
   sub rPosY, rax
 
+  push `\n`
   lea rdi, [rPosX + rPosY]
   call hex32
   push rax
-  syscall SYS_WRITE, FD_STDOUT, rsp, 8
+  syscall SYS_WRITE, FD_STDOUT, rsp, 9
 
   xor rax, rax
 syscall SYS_EXIT, rax
