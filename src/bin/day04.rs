@@ -64,15 +64,12 @@ impl Room {
 }
 
 fn rotate(c: char, n: u32) -> char {
-    let mut c = c;
-    for _ in 0..n {
-        c = match c {
-            'a' ... 'y' => (c as u8 + 1) as char,
-            'z' => 'a',
-            _ => panic!("cannot rotate {}", c),
-        }
+    let c = c as u8 + (n % 26) as u8;
+    if c > b'z' {
+        (c - 26) as char
+    } else {
+        c as char
     }
-    c
 }
 
 fn solve1(input: &str) -> u32 {
