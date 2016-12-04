@@ -1,7 +1,8 @@
+use std::collections::HashSet;
 use std::io::{self, Read};
 use std::ops::{Add, Mul};
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 struct Point(i32, i32);
 
 impl Point {
@@ -26,20 +27,14 @@ impl Add for Point {
     }
 }
 
-impl Mul<i32> for Point {
-    type Output = Self;
-
-    fn mul(self, rhs: i32) -> Self {
-        Point(self.0 * rhs, self.1 * rhs)
-    }
-}
-
 fn main() {
     let mut input = String::new();
     io::stdin().read_to_string(&mut input).unwrap();
 
     let mut position = Point(0, 0);
     let mut direction = Point(0, -1);
+    let mut visited = HashSet::new();
+    let mut collision = None;
 
     for instruction in input.trim().split(", ") {
         let (turn, count) = instruction.split_at(1);
@@ -51,8 +46,16 @@ fn main() {
         }
 
         let count: i32 = count.parse().unwrap();
-        position = position + direction * count;
+        for _ in 0..count {
+            position = position + direction;
+            if !visited.insert(position) && collision.is_none() {
+                collision = Some(position);
+            }
+        }
     }
 
     println!("Part 1: {}", position.distance(Point(0, 0)));
+    if let Some(point) = collision {
+        println!("Part 2: {}", point.distance(Point(0, 0)));
+    }
 }
