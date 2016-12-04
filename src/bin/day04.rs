@@ -26,7 +26,7 @@ impl FromStr for Room {
 }
 
 impl Room {
-    fn real(&self) -> bool {
+    fn checksum(&self) -> String {
         let mut letters = [
             (0, 'a'), (0, 'b'), (0, 'c'), (0, 'd'), (0, 'e'), (0, 'f'), (0, 'g'), (0, 'h'),
             (0, 'i'), (0, 'j'), (0, 'k'), (0, 'l'), (0, 'm'), (0, 'n'), (0, 'o'), (0, 'p'),
@@ -41,29 +41,71 @@ impl Room {
 
         letters.sort();
 
-        let expected: String = letters.into_iter()
+        letters.into_iter()
             .map(|l| l.1)
             .take(5)
-            .collect();
+            .collect()
+    }
 
-        expected == self.checksum
+    fn verify_checksum(&self) -> bool {
+        self.checksum == self.checksum()
+    }
+
+    fn decrypt_name(&self) -> String {
+        self.name.chars()
+            .map(|c| {
+                match c {
+                    '-' => ' ',
+                    _ => rotate(c, self.sector_id),
+                }
+            })
+            .collect()
     }
 }
 
-fn solve(input: &str) -> u32 {
+fn rotate(c: char, n: u32) -> char {
+    let mut c = c;
+    for _ in 0..n {
+        c = match c {
+            'a' ... 'y' => (c as u8 + 1) as char,
+            'z' => 'a',
+            _ => panic!("cannot rotate {}", c),
+        }
+    }
+    c
+}
+
+fn solve1(input: &str) -> u32 {
     input.lines()
         .map(str::parse)
         .map(Result::unwrap)
-        .filter(Room::real)
+        .filter(Room::verify_checksum)
         .map(|room| room.sector_id)
         .sum()
+}
+
+fn solve2(input: &str) -> Option<u32> {
+    input.lines()
+        .map(str::parse)
+        .map(Result::unwrap)
+        .filter(Room::verify_checksum)
+        .filter_map(|r| {
+            match r.decrypt_name().as_str() {
+                "northpole object storage" => Some(r.sector_id),
+                _ => None,
+            }
+        })
+        .next()
 }
 
 fn main() {
     let mut input = String::new();
     io::stdin().read_to_string(&mut input).unwrap();
 
-    println!("Part 1: {}", solve(&input));
+    println!("Part 1: {}", solve1(&input));
+    if let Some(sector_id) = solve2(&input) {
+        println!("Part 2: {}", sector_id);
+    }
 }
 
 #[test]
@@ -74,5 +116,11 @@ a-b-c-d-e-f-g-h-987[abcde]
 not-a-real-room-404[oarel]
 totally-real-room-200[decoy]
 ";
-    assert_eq!(1514, solve(&input[1..]));
+    assert_eq!(1514, solve1(&input[1..]));
+}
+
+#[test]
+fn part2() {
+    let room: Room = "qzmt-zixmtkozy-ivhz-343[zimth]".parse().unwrap();
+    assert_eq!("very encrypted name", room.decrypt_name());
 }
