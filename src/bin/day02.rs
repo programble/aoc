@@ -1,6 +1,6 @@
 use std::io::{self, Read};
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Keypad {
     K1, K2, K3,
     K4, K5, K6,
@@ -47,10 +47,7 @@ impl Keypad {
     }
 }
 
-fn main() {
-    let mut input = String::new();
-    io::stdin().read_to_string(&mut input).unwrap();
-
+fn solve(input: &str) -> Vec<Keypad> {
     let mut code = Vec::new();
     let mut key = Keypad::K5;
 
@@ -67,5 +64,18 @@ fn main() {
         code.push(key);
     }
 
-    println!("Part 1: {:?}", code);
+    code
+}
+
+fn main() {
+    let mut input = String::new();
+    io::stdin().read_to_string(&mut input).unwrap();
+
+    println!("Part 1: {:?}", solve(&input));
+}
+
+#[test]
+fn part1() {
+    use Keypad::*;
+    assert_eq!(vec![K1, K9, K8, K5], solve("ULL\nRRDDD\nLURDL\nUUUUD"));
 }
