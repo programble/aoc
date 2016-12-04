@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 use std::io::{self, Read};
-use std::ops::{Add, Mul};
+use std::ops::Add;
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 struct Point(i32, i32);
