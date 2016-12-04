@@ -22,10 +22,28 @@ impl FromStr for Triangle {
     }
 }
 
-fn solve(input: &str) -> usize {
+fn solve1(input: &str) -> usize {
     input.lines()
         .map(str::parse)
         .map(Result::unwrap)
+        .filter(Triangle::valid)
+        .count()
+}
+
+fn solve2(input: &str) -> usize {
+    let triangles: Vec<Triangle> = input.lines()
+        .map(str::parse)
+        .map(Result::unwrap)
+        .collect();
+
+    triangles.chunks(3)
+        .flat_map(|triple| {
+            vec![
+                Triangle(triple[0].0, triple[1].0, triple[2].0),
+                Triangle(triple[0].1, triple[1].1, triple[2].1),
+                Triangle(triple[0].2, triple[1].2, triple[2].2),
+            ]
+        })
         .filter(Triangle::valid)
         .count()
 }
@@ -34,10 +52,11 @@ fn main() {
     let mut input = String::new();
     io::stdin().read_to_string(&mut input).unwrap();
 
-    println!("Part 1: {}", solve(&input));
+    println!("Part 1: {}", solve1(&input));
+    println!("Part 2: {}", solve2(&input));
 }
 
 #[test]
 fn part1() {
-    assert_eq!(0, solve("5 10 25"));
+    assert_eq!(0, solve1("5 10 25"));
 }
