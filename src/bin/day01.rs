@@ -14,8 +14,8 @@ impl Point {
         Point(-self.1, self.0)
     }
 
-    fn distance(self, other: Self) -> i32 {
-        (self.0 - other.0).abs() + (self.1 - other.1).abs()
+    fn distance(self) -> i32 {
+        self.0.abs() + self.1.abs()
     }
 }
 
@@ -27,10 +27,7 @@ impl Add for Point {
     }
 }
 
-fn main() {
-    let mut input = String::new();
-    io::stdin().read_to_string(&mut input).unwrap();
-
+fn solve(input: &str) -> (i32, Option<i32>) {
     let mut position = Point(0, 0);
     let mut direction = Point(0, -1);
     let mut visited = HashSet::new();
@@ -48,14 +45,34 @@ fn main() {
         let count: i32 = count.parse().unwrap();
         for _ in 0..count {
             position = position + direction;
-            if !visited.insert(position) && collision.is_none() {
+            if collision.is_none() && !visited.insert(position) {
                 collision = Some(position);
             }
         }
     }
 
-    println!("Part 1: {}", position.distance(Point(0, 0)));
-    if let Some(point) = collision {
-        println!("Part 2: {}", point.distance(Point(0, 0)));
+    (position.distance(), collision.map(Point::distance))
+}
+
+fn main() {
+    let mut input = String::new();
+    io::stdin().read_to_string(&mut input).unwrap();
+
+    let (part1, part2) = solve(&input);
+    println!("Part 1: {}", part1);
+    if let Some(part2) = part2 {
+        println!("Part 2: {}", part2);
     }
+}
+
+#[test]
+fn part1() {
+    assert_eq!(5, solve("R2, L3").0);
+    assert_eq!(2, solve("R2, R2, R2").0);
+    assert_eq!(12, solve("R5, L5, R5, R3").0);
+}
+
+#[test]
+fn part2() {
+    assert_eq!(Some(4), solve("R8, R4, R4, R8").1);
 }
