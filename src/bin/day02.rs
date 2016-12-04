@@ -1,5 +1,12 @@
 use std::io::{self, Read};
 
+trait Pad: Copy + Default {
+    fn up(self) -> Self;
+    fn down(self) -> Self;
+    fn left(self) -> Self;
+    fn right(self) -> Self;
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Keypad {
     K1, K2, K3,
@@ -7,7 +14,11 @@ enum Keypad {
     K7, K8, K9,
 }
 
-impl Keypad {
+impl Default for Keypad {
+    fn default() -> Self { Keypad::K5 }
+}
+
+impl Pad for Keypad {
     fn up(self) -> Self {
         use Keypad::*;
         match self {
@@ -47,9 +58,66 @@ impl Keypad {
     }
 }
 
-fn solve(input: &str) -> Vec<Keypad> {
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Wackypad {
+            K1,
+        K2, K3, K4,
+    K5, K6, K7, K8, K9,
+        KA, KB, KC,
+            KD,
+}
+
+impl Default for Wackypad {
+    fn default() -> Self { Wackypad::K5 }
+}
+
+impl Pad for Wackypad {
+    fn up(self) -> Self {
+        use Wackypad::*;
+        match self {
+                      K3 => K1,
+            K6 => K2, K7 => K3, K8 => K4,
+            KA => K6, KB => K7, KC => K8,
+                      KD => KB,
+            _ => self,
+        }
+    }
+
+    fn down(self) -> Self {
+        use Wackypad::*;
+        match self {
+                      K1 => K3,
+            K2 => K6, K3 => K7, K4 => K8,
+            K6 => KA, K7 => KB, K8 => KC,
+                      KB => KD,
+            _ => self,
+        }
+    }
+
+    fn left(self) -> Self {
+        use Wackypad::*;
+        match self {
+                      K3 => K2, K4 => K3,
+            K6 => K5, K7 => K6, K8 => K7, K9 => K8,
+                      KB => KA, KC => KB,
+            _ => self,
+        }
+    }
+
+    fn right(self) -> Self {
+        use Wackypad::*;
+        match self {
+                      K2 => K3, K3 => K4,
+            K5 => K6, K6 => K7, K7 => K8, K8 => K9,
+                      KA => KB, KB => KC,
+            _ => self,
+        }
+    }
+}
+
+fn solve<P: Pad>(input: &str) -> Vec<P> {
     let mut code = Vec::new();
-    let mut key = Keypad::K5;
+    let mut key = P::default();
 
     for line in input.lines() {
         for direction in line.chars() {
@@ -71,11 +139,18 @@ fn main() {
     let mut input = String::new();
     io::stdin().read_to_string(&mut input).unwrap();
 
-    println!("Part 1: {:?}", solve(&input));
+    println!("Part 1: {:?}", solve::<Keypad>(&input));
+    println!("Part 2: {:?}", solve::<Wackypad>(&input));
 }
 
 #[test]
 fn part1() {
     use Keypad::*;
     assert_eq!(vec![K1, K9, K8, K5], solve("ULL\nRRDDD\nLURDL\nUUUUD"));
+}
+
+#[test]
+fn part2() {
+    use Wackypad::*;
+    assert_eq!(vec![K5, KD, KB, K3], solve("ULL\nRRDDD\nLURDL\nUUUUD"));
 }
