@@ -1,5 +1,5 @@
 section .rodata
-hexDigits: db '0123456789ABCDEF'
+hexDigits: db '0123456789abcdef'
 
 section .text
 hex32:
@@ -10,7 +10,7 @@ hex32:
 %rep 8
   shl rax, 8
   mov al, dil
-  and al, 0x0F
+  and al, 0x0f
   xlatb
   shr rdi, 4
 %endrep
