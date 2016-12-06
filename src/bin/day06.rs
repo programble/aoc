@@ -1,46 +1,12 @@
+use std::collections::HashMap;
 use std::io::{self, Read};
 
-struct Runs<T, I> {
-    inner: I,
-    current: Option<T>,
-    count: usize,
-}
-
-impl<T, I> From<I> for Runs<T, I> {
-    fn from(iter: I) -> Self {
-        Runs {
-            inner: iter,
-            current: None,
-            count: 0,
-        }
+fn frequencies(chars: &[char]) -> HashMap<char, u32> {
+    let mut map = HashMap::new();
+    for &ch in chars {
+        *map.entry(ch).or_insert(0) += 1;
     }
-}
-
-// Gross.
-impl<T: Copy + PartialEq, I: Iterator<Item = T>> Iterator for Runs<T, I> {
-    type Item = (T, usize);
-
-    fn next(&mut self) -> Option<(T, usize)> {
-        for c in &mut self.inner {
-            match self.current {
-                None => {
-                    self.current = Some(c);
-                    self.count = 1;
-                },
-                Some(r) if r == c => {
-                    self.count += 1;
-                },
-                Some(r) => {
-                    self.current = Some(c);
-                    let run = self.count;
-                    self.count = 1;
-                    return Some((r, run));
-                },
-            }
-        }
-
-        self.current.take().map(|c| (c, self.count))
-    }
+    map
 }
 
 fn solve(input: &str) -> String {
@@ -48,19 +14,17 @@ fn solve(input: &str) -> String {
     let mut columns = vec![Vec::new(); len];
 
     for line in input.lines() {
-        for (i, c) in line.chars().enumerate() {
-            columns[i].push(c);
+        for (i, ch) in line.chars().enumerate() {
+            columns[i].push(ch);
         }
     }
 
     columns.into_iter()
-        .map(|mut column| {
-            column.sort();
-            Runs::from(column.into_iter())
-                .max_by_key(|run| run.1)
-                .unwrap()
-                .0
-        })
+        .map(|column| frequencies(&column))
+        .map(IntoIterator::into_iter)
+        .map(|iter| iter.max_by_key(|&(_, v)| v))
+        .map(Option::unwrap)
+        .map(|(ch, _)| ch)
         .collect()
 }
 
