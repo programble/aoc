@@ -1,6 +1,7 @@
 [package]
+authors = ["Curtis McEnroe <programble@gmail.com>"]
 name = "aoc"
 version = "0.1.0"
-authors = ["Curtis McEnroe <programble@gmail.com>"]
 
 [dependencies]
+rust-crypto = "0.2.36"
