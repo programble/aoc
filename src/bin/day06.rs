@@ -9,7 +9,7 @@ fn frequencies(chars: &[char]) -> HashMap<char, u32> {
     map
 }
 
-fn solve(input: &str) -> String {
+fn solve1(input: &str) -> String {
     let len = input.find('\n').unwrap_or(input.len());
     let mut columns = vec![Vec::new(); len];
 
@@ -28,16 +28,35 @@ fn solve(input: &str) -> String {
         .collect()
 }
 
+fn solve2(input: &str) -> String {
+    let len = input.find('\n').unwrap_or(input.len());
+    let mut columns = vec![Vec::new(); len];
+
+    for line in input.lines() {
+        for (i, ch) in line.chars().enumerate() {
+            columns[i].push(ch);
+        }
+    }
+
+    columns.into_iter()
+        .map(|column| frequencies(&column))
+        .map(IntoIterator::into_iter)
+        .map(|iter| iter.min_by_key(|&(_, v)| v))
+        .map(Option::unwrap)
+        .map(|(ch, _)| ch)
+        .collect()
+}
+
 fn main() {
     let mut input = String::new();
     io::stdin().read_to_string(&mut input).unwrap();
 
-    println!("Part 1: {}", solve(&input));
+    println!("Part 1: {}", solve1(&input));
+    println!("Part 2: {}", solve2(&input));
 }
 
-#[test]
-fn part1() {
-    let input = "
+#[cfg(test)]
+const TEST_INPUT: &'static str = "
 eedadn
 drvtee
 eandsr
@@ -55,5 +74,14 @@ vrdear
 dvrsen
 enarar
 ";
-    assert_eq!("easter", solve(input.trim()));
+
+
+#[test]
+fn part1() {
+    assert_eq!("easter", solve1(TEST_INPUT.trim()));
+}
+
+#[test]
+fn part2() {
+    assert_eq!("advent", solve2(TEST_INPUT.trim()));
 }
