@@ -11,6 +11,26 @@ fn has_abba(s: &str) -> bool {
         })
 }
 
+fn abas(s: &str) -> Vec<&[u8]> {
+    s.as_bytes()
+        .windows(3)
+        .filter(|window| {
+            window[0] == window[2]
+                && window[0] != window[1]
+        })
+        .collect()
+}
+
+fn has_bab(s: &str, aba: &[u8]) -> bool {
+    s.as_bytes()
+        .windows(3)
+        .any(|window| {
+            window[0] == aba[1]
+                && window[1] == aba[0]
+                && window[2] == aba[1]
+        })
+}
+
 #[derive(Default)]
 struct Ip {
     supernet: Vec<String>,
@@ -21,6 +41,17 @@ impl Ip {
     fn supports_tls(&self) -> bool {
         self.supernet.iter().any(|s| has_abba(s))
             && !self.hypernet.iter().any(|s| has_abba(s))
+    }
+
+    fn supports_ssl(&self) -> bool {
+        self.supernet
+            .iter()
+            .flat_map(|s| abas(s))
+            .any(|aba| {
+                self.hypernet
+                    .iter()
+                    .any(|s| has_bab(s, aba))
+            })
     }
 }
 
@@ -41,7 +72,7 @@ impl FromStr for Ip {
     }
 }
 
-fn solve(input: &str) -> usize {
+fn solve1(input: &str) -> usize {
     input.lines()
         .map(str::parse)
         .map(Result::unwrap)
@@ -49,11 +80,20 @@ fn solve(input: &str) -> usize {
         .count()
 }
 
+fn solve2(input: &str) -> usize {
+    input.lines()
+        .map(str::parse)
+        .map(Result::unwrap)
+        .filter(Ip::supports_ssl)
+        .count()
+}
+
 fn main() {
     let mut input = String::new();
     io::stdin().read_to_string(&mut input).unwrap();
 
-    println!("Part 1: {}", solve(&input));
+    println!("Part 1: {}", solve1(&input));
+    println!("Part 2: {}", solve2(&input));
 }
 
 #[test]
@@ -64,5 +104,16 @@ abcd[bddb]xyyx
 aaaa[qwer]tyui
 ioxxoj[asdfgh]zxcvbn
 ";
-    assert_eq!(2, solve(input.trim()));
+    assert_eq!(2, solve1(input.trim()));
+}
+
+#[test]
+fn part2() {
+    let input = "
+aba[bab]xyz
+xyx[xyx]xyx
+aaa[kek]eke
+zazbz[bzb]cdb
+";
+    assert_eq!(3, solve2(input.trim()));
 }
