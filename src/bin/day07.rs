@@ -1,58 +1,43 @@
 use std::io::{self, Read};
 use std::str::FromStr;
 
-struct Sequence {
-    sequence: String,
-    hypernet: bool,
+fn has_abba(s: &str) -> bool {
+    s.as_bytes()
+        .windows(4)
+        .any(|window| {
+            window[0] == window[3]
+                && window[1] == window[2]
+                && window[0] != window[1]
+        })
 }
 
-impl Sequence {
-    fn has_abba(&self) -> bool {
-        self.sequence
-            .as_bytes()
-            .windows(4)
-            .any(|window| {
-                window[0] == window[3]
-                    && window[1] == window[2]
-                    && window[0] != window[1]
-            })
-    }
+#[derive(Default)]
+struct Ip {
+    supernet: Vec<String>,
+    hypernet: Vec<String>,
 }
-
-struct Ip(Vec<Sequence>);
 
 impl Ip {
     fn supports_tls(&self) -> bool {
-        let any_abbas = self.0
-            .iter()
-            .any(Sequence::has_abba);
-
-        let any_hypernet_abbas = self.0
-            .iter()
-            .filter(|sequence| sequence.hypernet)
-            .any(Sequence::has_abba);
-
-        any_abbas && !any_hypernet_abbas
+        self.supernet.iter().any(|s| has_abba(s))
+            && !self.hypernet.iter().any(|s| has_abba(s))
     }
 }
 
 impl FromStr for Ip {
     type Err = ();
     fn from_str(s: &str) -> Result<Ip, ()> {
-        let mut sequences = Vec::new();
-        let mut hypernet = false;
+        let mut ip = Ip::default();
 
-        for sequence in s.split(|ch| ch == '[' || ch == ']') {
-            sequences.push(
-                Sequence {
-                    sequence: sequence.to_owned(),
-                    hypernet: hypernet
-                }
-            );
-            hypernet = !hypernet;
+        for (i, seq) in s.split(|ch| ch == '[' || ch == ']').enumerate() {
+            if i % 2 == 0 {
+                ip.supernet.push(seq.to_owned());
+            } else {
+                ip.hypernet.push(seq.to_owned());
+            }
         }
 
-        Ok(Ip(sequences))
+        Ok(ip)
     }
 }
 
