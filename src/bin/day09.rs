@@ -1,17 +1,19 @@
 use std::io::{self, Read};
-use std::str::FromStr;
 
-struct Chunk {
-    data: String,
-    repeat: u32,
+enum Chunk<'a> {
+    Literal(&'a str),
+    Repeat(u32, &'a str),
 }
 
-impl Chunk {
+impl<'a> Chunk<'a> {
     fn len(&self) -> usize {
-        self.data.len() * self.repeat as usize
+        match *self {
+            Chunk::Literal(s) => s.len(),
+            Chunk::Repeat(n, s) => s.len() * n as usize,
+        }
     }
 
-    fn parse(s: &str) -> Result<(Self, &str), ()> {
+    fn parse(s: &'a str) -> Result<(Self, &'a str), ()> {
         if s.starts_with('(') {
             let mut iter = s[1..].splitn(3, |ch| ch == 'x' || ch == ')');
 
@@ -19,39 +21,24 @@ impl Chunk {
             let repeat = iter.next().ok_or(())?.parse().map_err(|_| ())?;
             let (data, rest) = iter.next().ok_or(())?.split_at(len);
 
-            let chunk = Chunk {
-                data: data.to_owned(),
-                repeat: repeat,
-            };
-
-            Ok((chunk, rest))
+            Ok((Chunk::Repeat(repeat, data), rest))
         } else {
             let paren = s.find('(').unwrap_or(s.len());
-
-            let chunk = Chunk {
-                data: s[..paren].to_owned(),
-                repeat: 1,
-            };
-            let rest = &s[paren..];
-
-            Ok((chunk, rest))
+            Ok((Chunk::Literal(&s[..paren]), &s[paren..]))
         }
     }
 }
 
-struct File {
-    chunks: Vec<Chunk>,
+struct File<'a> {
+    chunks: Vec<Chunk<'a>>,
 }
 
-impl File {
+impl<'a> File<'a> {
     fn len(&self) -> usize {
         self.chunks.iter().map(Chunk::len).sum()
     }
-}
 
-impl FromStr for File {
-    type Err = ();
-    fn from_str(mut s: &str) -> Result<Self, ()> {
+    fn parse(mut s: &'a str) -> Result<Self, ()> {
         let mut chunks = Vec::new();
 
         while !s.is_empty() {
@@ -65,7 +52,7 @@ impl FromStr for File {
 }
 
 fn solve(input: &str) -> usize {
-    let file: File = input.parse().unwrap();
+    let file = File::parse(input).unwrap();
     file.len()
 }
 
