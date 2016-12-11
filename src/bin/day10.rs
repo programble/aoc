@@ -90,7 +90,7 @@ impl FromStr for Instructions {
 
 #[derive(Default)]
 struct State {
-    outputs: HashMap<Output, Vec<Chip>>,
+    outputs: HashMap<Output, Chip>,
     bots: HashMap<Bot, BotChips>,
     comparisons: HashMap<(Chip, Chip), Bot>,
 }
@@ -120,26 +120,26 @@ impl State {
             self.comparisons.insert((low, high), bot);
 
             let &(low_dest, high_dest) = instructions.bots.get(&bot).unwrap();
-            self.add_to(low_dest, low);
-            self.add_to(high_dest, high);
+            self.give_to(low_dest, low);
+            self.give_to(high_dest, high);
         }
 
         true
     }
 
-    fn add_to(&mut self, destination: Destination, chip: Chip) {
+    fn give_to(&mut self, destination: Destination, chip: Chip) {
         match destination {
             Destination::Bot(bot) => {
                 self.bots.entry(bot).or_insert_with(Default::default).add(chip);
             },
             Destination::Output(output) => {
-                self.outputs.entry(output).or_insert_with(Vec::new).push(chip);
+                self.outputs.insert(output, chip);
             },
         }
     }
 }
 
-fn solve(comparison: (Chip, Chip), input: &str) -> Option<Bot> {
+fn solve1(comparison: (Chip, Chip), input: &str) -> Option<Bot> {
     let instructions = input.parse().unwrap();
     let mut state = State::default();
     state.initialize(&instructions);
@@ -147,11 +147,23 @@ fn solve(comparison: (Chip, Chip), input: &str) -> Option<Bot> {
     state.comparisons.get(&comparison).cloned()
 }
 
+fn solve2(input: &str) -> u32 {
+    let instructions = input.parse().unwrap();
+    let mut state = State::default();
+    state.initialize(&instructions);
+    while state.step(&instructions) { }
+
+    state.outputs.get(&Output(0)).unwrap().0
+        * state.outputs.get(&Output(1)).unwrap().0
+        * state.outputs.get(&Output(2)).unwrap().0
+}
+
 fn main() {
     let mut input = String::new();
     io::stdin().read_to_string(&mut input).unwrap();
 
-    println!("Part 1: {:?}", solve((Chip(17), Chip(61)), &input));
+    println!("Part 1: {:?}", solve1((Chip(17), Chip(61)), &input));
+    println!("Part 2: {}", solve2(&input));
 }
 
 #[test]
@@ -164,5 +176,5 @@ bot 1 gives low to output 1 and high to bot 0
 bot 0 gives low to output 2 and high to output 0
 value 2 goes to bot 2
 ";
-    assert_eq!(Some(Bot(2)), solve((Chip(2), Chip(5)), input.trim()));
+    assert_eq!(Some(Bot(2)), solve1((Chip(2), Chip(5)), input.trim()));
 }
