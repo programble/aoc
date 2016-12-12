@@ -108,8 +108,15 @@ impl Vm {
     }
 }
 
-fn solve(input: &str) -> i32 {
+fn solve1(input: &str) -> i32 {
     let mut vm: Vm = input.parse().unwrap();
+    while vm.step() { }
+    vm.registers[0]
+}
+
+fn solve2(input: &str) -> i32 {
+    let mut vm: Vm = input.parse().unwrap();
+    vm.registers[2] = 1;
     while vm.step() { }
     vm.registers[0]
 }
@@ -118,7 +125,8 @@ fn main() {
     let mut input = String::new();
     io::stdin().read_to_string(&mut input).unwrap();
 
-    println!("Part 1: {}", solve(&input));
+    println!("Part 1: {}", solve1(&input));
+    println!("Part 2: {}", solve2(&input));
 }
 
 #[test]
@@ -131,5 +139,5 @@ dec a
 jnz a 2
 dec a
 ";
-    assert_eq!(42, solve(input.trim()));
+    assert_eq!(42, solve1(input.trim()));
 }
