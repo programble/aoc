@@ -7,17 +7,37 @@ use std::iter;
 use crypto::digest::Digest;
 use crypto::md5::Md5;
 
-fn md5(salt: &str, index: u32) -> String {
-    let mut md5 = Md5::new();
-    md5.input_str(salt);
-    md5.input_str(&index.to_string());
-    md5.result_str()
+trait Hash {
+    fn hash(salt: &str, index: u32) -> String;
 }
 
-fn solve(salt: &str) -> u32 {
+struct Part1;
+impl Hash for Part1 {
+    fn hash(salt: &str, index: u32) -> String {
+        let mut md5 = Md5::new();
+        md5.input_str(salt);
+        md5.input_str(&index.to_string());
+        md5.result_str()
+    }
+}
+
+struct Part2;
+impl Hash for Part2 {
+    fn hash(salt: &str, index: u32) -> String {
+        let mut hash = Part1::hash(salt, index);
+        for _ in 0..2016 {
+            let mut md5 = Md5::new();
+            md5.input_str(&hash);
+            hash = md5.result_str();
+        }
+        hash
+    }
+}
+
+fn solve<H: Hash>(salt: &str) -> u32 {
     let mut hashes = VecDeque::new();
     for i in 0..1001 {
-        hashes.push_back(md5(salt, i));
+        hashes.push_back(H::hash(salt, i));
     }
 
     let mut keys = 0;
@@ -40,7 +60,7 @@ fn solve(salt: &str) -> u32 {
         }
 
         index += 1;
-        hashes.push_back(md5(salt, 1000 + index));
+        hashes.push_back(H::hash(salt, 1000 + index));
     }
 
     unreachable!()
@@ -50,11 +70,18 @@ fn main() {
     let mut input = String::new();
     io::stdin().read_to_string(&mut input).unwrap();
 
-    println!("Part 1: {}", solve(input.trim()));
+    println!("Part 1: {}", solve::<Part1>(input.trim()));
+    println!("Part 2: {}", solve::<Part2>(input.trim()));
 }
 
 #[test]
 #[ignore]
 fn part1() {
-    assert_eq!(22728, solve("abc"));
+    assert_eq!(22728, solve::<Part1>("abc"));
+}
+
+#[test]
+#[ignore]
+fn part2() {
+    assert_eq!(22551, solve::<Part2>("abc"));
 }
