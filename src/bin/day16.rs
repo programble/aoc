@@ -42,6 +42,7 @@ fn main() {
     io::stdin().read_to_string(&mut input).unwrap();
 
     println!("Part 1: {}", solve(272, input.trim()));
+    println!("Part 2: {}", solve(35651584, input.trim()));
 }
 
 #[test]
