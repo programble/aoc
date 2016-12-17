@@ -52,18 +52,17 @@ impl Layout {
     }
 }
 
-fn solve(goal: Point, constant: u32) -> u32 {
+fn solve1(goal: Point, constant: u32) -> u32 {
     let layout = Layout { constant: constant };
 
+    let mut distance = HashMap::new();
     let mut frontier = VecDeque::new();
     frontier.push_back(START);
+    distance.insert(START, 0);
 
-    let mut previous = HashMap::new();
-    previous.insert(START, START);
-
-    while !frontier.is_empty() {
-        let current = frontier.pop_front().unwrap();
+    while let Some(current) = frontier.pop_front() {
         if current == goal { break; }
+        let current_distance = *distance.get(&current).unwrap();
 
         let neighbors = current.neighbors();
         let iter = neighbors.iter()
@@ -71,31 +70,53 @@ fn solve(goal: Point, constant: u32) -> u32 {
             .filter(|&p| layout.is_open(p));
 
         for next in iter {
-            if !previous.contains_key(&next) {
+            if !distance.contains_key(&next) {
                 frontier.push_back(next);
-                previous.insert(next, current);
+                distance.insert(next, current_distance + 1);
             }
         }
     }
 
-    let mut steps = 0;
-    let mut current = goal;
-    while current != START {
-        current = *previous.get(&current).unwrap();
-        steps += 1;
+    *distance.get(&goal).unwrap()
+}
+
+fn solve2(limit: u32, constant: u32) -> usize {
+    let layout = Layout { constant: constant };
+
+    let mut distance = HashMap::new();
+    let mut frontier = VecDeque::new();
+    frontier.push_back(START);
+    distance.insert(START, 0);
+
+    while let Some(current) = frontier.pop_front() {
+        let current_distance = *distance.get(&current).unwrap();
+        if current_distance == limit { continue; }
+
+        let neighbors = current.neighbors();
+        let iter = neighbors.iter()
+            .filter_map(|&p| p)
+            .filter(|&p| layout.is_open(p));
+
+        for next in iter {
+            if !distance.contains_key(&next) {
+                frontier.push_back(next);
+                distance.insert(next, current_distance + 1);
+            }
+        }
     }
 
-    steps
+    distance.len()
 }
 
 fn main() {
     let mut input = String::new();
     io::stdin().read_to_string(&mut input).unwrap();
 
-    println!("Part 1: {}", solve(Point { x: 31, y: 39 }, input.trim().parse().unwrap()));
+    println!("Part 1: {}", solve1(Point { x: 31, y: 39 }, input.trim().parse().unwrap()));
+    println!("Part 2: {}", solve2(50, input.trim().parse().unwrap()));
 }
 
 #[test]
 fn part1() {
-    assert_eq!(11, solve(Point { x: 7, y: 4 }, 10));
+    assert_eq!(11, solve1(Point { x: 7, y: 4 }, 10));
 }
