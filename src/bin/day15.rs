@@ -64,8 +64,19 @@ impl<'a> From<&'a str> for Sculpture {
     }
 }
 
-fn solve(input: &str) -> u32 {
+fn solve1(input: &str) -> u32 {
     let mut sculpture = Sculpture::from(input);
+    loop {
+        if sculpture.clone().drop_capsule() {
+            return sculpture.time;
+        }
+        sculpture.tick();
+    }
+}
+
+fn solve2(input: &str) -> u32 {
+    let mut sculpture = Sculpture::from(input);
+    sculpture.discs.push(Disc { positions: 11, position: 0 });
     loop {
         if sculpture.clone().drop_capsule() {
             return sculpture.time;
@@ -78,7 +89,8 @@ fn main() {
     let mut input = String::new();
     io::stdin().read_to_string(&mut input).unwrap();
 
-    println!("Part 1: {}", solve(&input));
+    println!("Part 1: {}", solve1(&input));
+    println!("Part 2: {}", solve2(&input));
 }
 
 #[test]
@@ -87,5 +99,5 @@ fn part1() {
 Disc #1 has 5 positions; at time=0, it is at position 4.
 Disc #2 has 2 positions; at time=0, it is at position 1.
 ";
-    assert_eq!(5, solve(input.trim()));
+    assert_eq!(5, solve1(input.trim()));
 }
