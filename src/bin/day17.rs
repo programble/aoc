@@ -93,7 +93,7 @@ impl State {
     }
 }
 
-fn solve(passcode: &str) -> String {
+fn solve1(passcode: &str) -> String {
     let mut states = VecDeque::new();
     states.push_back(State::default());
 
@@ -107,16 +107,42 @@ fn solve(passcode: &str) -> String {
     panic!("no path to vault")
 }
 
+fn solve2(passcode: &str) -> usize {
+    let mut states = VecDeque::new();
+    states.push_back(State::default());
+
+    let mut longest = None;
+
+    while let Some(state) = states.pop_front() {
+        if state.is_vault() {
+            longest = Some(state.clone());
+        } else {
+            state.generate_states(&mut states, passcode);
+        }
+    }
+
+    longest.unwrap().path.len()
+}
+
 fn main() {
     let mut input = String::new();
     io::stdin().read_to_string(&mut input).unwrap();
 
-    println!("Part 1: {}", solve(input.trim()));
+    println!("Part 1: {}", solve1(input.trim()));
+    println!("Part 2: {}", solve2(input.trim()));
 }
 
 #[test]
 fn part1() {
-    assert_eq!("DDRRRD", solve("ihgpwlah"));
-    assert_eq!("DDUDRLRRUDRD", solve("kglvqrro"));
-    assert_eq!("DRURDRUDDLLDLUURRDULRLDUUDDDRR", solve("ulqzkmiv"));
+    assert_eq!("DDRRRD", solve1("ihgpwlah"));
+    assert_eq!("DDUDRLRRUDRD", solve1("kglvqrro"));
+    assert_eq!("DRURDRUDDLLDLUURRDULRLDUUDDDRR", solve1("ulqzkmiv"));
+}
+
+#[test]
+#[ignore]
+fn part2() {
+    assert_eq!(370, solve2("ihgpwlah"));
+    assert_eq!(492, solve2("kglvqrro"));
+    assert_eq!(830, solve2("ulqzkmiv"));
 }
