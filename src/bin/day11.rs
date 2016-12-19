@@ -161,7 +161,20 @@ fn main() {
     floors[2].objects.insert(Object::Microchip(RUTHENIUM));
     floors[2].objects.insert(Object::Microchip(PLUTONIUM));
 
-    println!("Part 1: {}", solve(floors));
+    println!("Part 1: {}", solve(floors.clone()));
+
+
+    // An elerium generator.
+    // An elerium-compatible microchip.
+    // A dilithium generator.
+    // A dilithium-compatible microchip.
+    const ELERIUM: u8 = 5;
+    const DILITHIUM: u8 = 6;
+    floors[0].objects.insert(Object::Generator(ELERIUM));
+    floors[0].objects.insert(Object::Microchip(ELERIUM));
+    floors[0].objects.insert(Object::Generator(DILITHIUM));
+    floors[0].objects.insert(Object::Microchip(DILITHIUM));
+    println!("Part 2: {}", solve(floors));
 }
 
 #[test]
