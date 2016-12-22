@@ -73,5 +73,5 @@ fn part2() {
 0-2
 4-7
 ";
-    assert_eq!(u32::MAX - 8, solve2(input.trim()));
+    assert_eq!(u32::MAX - 7, solve2(input.trim()));
 }
