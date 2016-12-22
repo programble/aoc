@@ -1,6 +1,6 @@
 use std::io::{self, Read};
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy)]
 enum Operation {
     SwapPosition(usize, usize),
     SwapLetter(u8, u8),
@@ -34,7 +34,7 @@ impl Operation {
             },
             Operation::RotateLetter(a) => {
                 let mut n = 1 + slice.iter().position(|&x| x == a).unwrap();
-                if n >= 4 { n += 1 }
+                if n >= 5 { n += 1 }
                 n %= slice.len();
                 slice.reverse();
                 slice[0..n].reverse();
@@ -91,9 +91,7 @@ fn solve(password: &str, input: &str) -> String {
     let mut password = password.as_bytes().to_owned();
 
     for operation in input.lines().map(Operation::from) {
-        print!("{} ", std::str::from_utf8(&password).unwrap());
         operation.apply(&mut password);
-        println!("{:^20} {}", format!("{:?}", operation), std::str::from_utf8(&password).unwrap());
     }
 
     String::from_utf8(password).unwrap()
