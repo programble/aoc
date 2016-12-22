@@ -87,7 +87,7 @@ impl<'a> From<&'a str> for Operation {
     }
 }
 
-fn solve(password: &str, input: &str) -> String {
+fn solve1(password: &str, input: &str) -> String {
     let mut password = password.as_bytes().to_owned();
 
     for operation in input.lines().map(Operation::from) {
@@ -97,11 +97,35 @@ fn solve(password: &str, input: &str) -> String {
     String::from_utf8(password).unwrap()
 }
 
+fn solve2(scrambled: &str, input: &str) -> String {
+    let operations: Vec<_> = input.lines().map(Operation::from).collect();
+
+    let mut password = "abcdefgh".as_bytes().to_owned();
+    let len = password.len();
+
+    loop {
+        let k = (0..(len - 1)).rev().find(|&k| password[k] < password [k + 1]).unwrap();
+        let l = ((k + 1)..len).rev().find(|&l| password[k] < password[l]).unwrap();
+        password.swap(k, l);
+        password[(k + 1)..].reverse();
+
+        let mut candidate = password.clone();
+        for operation in &operations {
+            operation.apply(&mut candidate);
+        }
+
+        if candidate == scrambled.as_bytes() {
+            return String::from_utf8(password).unwrap();
+        }
+    }
+}
+
 fn main() {
     let mut input = String::new();
     io::stdin().read_to_string(&mut input).unwrap();
 
-    println!("Part 1: {}", solve("abcdefgh", &input));
+    println!("Part 1: {}", solve1("abcdefgh", &input));
+    println!("Part 2: {}", solve2("fbgdceah", &input));
 }
 
 #[test]
@@ -116,5 +140,5 @@ move position 3 to position 0
 rotate based on position of letter b
 rotate based on position of letter d
 ";
-    assert_eq!("decab", solve("abcde", input.trim()));
+    assert_eq!("decab", solve1("abcde", input.trim()));
 }
