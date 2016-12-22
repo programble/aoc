@@ -1,27 +1,25 @@
+use std::collections::VecDeque;
 use std::io::{self, Read};
 
 #[derive(Clone, Copy)]
 struct Elf {
+    position: usize,
     gifts: usize,
-    next: usize,
 }
 
 fn solve(count: usize) -> usize {
-    let mut circle: Vec<Elf> = (0..count).map(|i| Elf { gifts: 1, next: i + 1 }).collect();
-    circle.last_mut().unwrap().next = 0;
+    let mut circle: VecDeque<Elf> = (0..count)
+        .map(|i| Elf { position: i + 1, gifts: 1 })
+        .collect();
 
-    let mut index = 0;
-
-    while circle[index].gifts < count {
-        let next = circle[index].next;
-        circle[index].gifts += circle[next].gifts;
-        circle[next].gifts = 0;
-        circle[index].next = circle[next].next;
-
-        index = circle[index].next;
+    while circle.len() > 1 {
+        let mut current = circle.pop_front().unwrap();
+        let next = circle.pop_front().unwrap();
+        current.gifts += next.gifts;
+        circle.push_back(current);
     }
 
-    index + 1
+    circle.pop_front().unwrap().position
 }
 
 fn main() {
