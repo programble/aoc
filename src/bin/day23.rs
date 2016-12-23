@@ -125,9 +125,9 @@ impl Vm {
     }
 }
 
-fn solve(input: &str) -> i32 {
+fn solve(initial: i32, input: &str) -> i32 {
     let mut vm = Vm::from(input);
-    vm.registers[0] = 7;
+    vm.registers[0] = initial;
     while vm.step() { }
     vm.registers[0]
 }
@@ -136,7 +136,8 @@ fn main() {
     let mut input = String::new();
     io::stdin().read_to_string(&mut input).unwrap();
 
-    println!("Part 1: {}", solve(&input));
+    println!("Part 1: {}", solve(7, &input));
+    println!("Part 2: {}", solve(12, &input));
 }
 
 #[test]
