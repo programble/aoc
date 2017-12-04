@@ -1,42 +1,20 @@
 use std::io::{self, Read};
 
-// 17  16  15  14  13
-// 18   5   4   3  12
-// 19   6   1   2  11
-// 20   7   8   9  10
-// 21  22  23---> ...
-//
-// 1 R
-// 1 U
-// 2 L
-// 2 D
-// 3 R
-// 3 U
-// 4 L
-// 4 D
-// 5 R
-
 fn solve1(input: i32) -> i32 {
-    let ds = [(1, 0), (0, 1), (-1, 0), (0, -1)];
-
+    let spiral = [(1, 0), (0, 1), (-1, 0), (0, -1)];
+    let (mut x, mut y) = (0i32, 0i32);
     let mut n = 1;
-    let mut x = 0i32;
-    let mut y = 0i32;
-    let mut r = 1;
-    let mut i = 0;
 
-    for &(dx, dy) in ds.iter().cycle() {
-        for _ in 0..r {
+    for (i, &(dx, dy)) in spiral.iter().cycle().enumerate() {
+        let length = 1 + i / 2;
+        for _ in 0..length {
             if n == input {
                 return x.abs() + y.abs();
             }
-
             n += 1;
             x += dx;
             y += dy;
         }
-        r += i % 2;
-        i += 1;
     }
     unreachable!()
 }
