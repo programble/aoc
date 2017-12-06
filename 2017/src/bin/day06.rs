@@ -1,16 +1,17 @@
-use std::collections::HashSet;
+use std::collections::hash_map::{Entry, HashMap};
 use std::io::{self, Read};
 
-fn solve1(input: &str) -> u32 {
+fn solve(input: &str) -> (u32, u32) {
     let mut banks: Vec<u32> = input.split_whitespace()
         .map(str::parse)
         .map(Result::unwrap)
         .collect();
-    let mut states = HashSet::new();
+    let mut states = HashMap::new();
 
     for cycle in 0.. {
-        if !states.insert(banks.clone()) {
-            return cycle;
+        match states.entry(banks.clone()) {
+            Entry::Occupied(e) => return (cycle, cycle - e.get()),
+            Entry::Vacant(e) => { e.insert(cycle); },
         }
 
         let (index, mut blocks) = banks.iter()
@@ -32,14 +33,28 @@ fn solve1(input: &str) -> u32 {
     unreachable!()
 }
 
+fn solve1(input: &str) -> u32 {
+    solve(input).0
+}
+
+fn solve2(input: &str) -> u32 {
+    solve(input).1
+}
+
 fn main() {
     let mut input = String::new();
     io::stdin().read_to_string(&mut input).unwrap();
 
     println!("Part 1: {}", solve1(input.trim()));
+    println!("Part 2: {}", solve2(input.trim()));
 }
 
 #[test]
 fn part1() {
     assert_eq!(5, solve1("0 2 7 0"));
+}
+
+#[test]
+fn part2() {
+    assert_eq!(4, solve2("0 2 7 0"));
 }
