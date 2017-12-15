@@ -1,6 +1,6 @@
 use std::io::{self, Read};
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum State {
     Group,
     Garbage,
@@ -9,7 +9,7 @@ enum State {
 
 use self::State::*;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct Machine(State, u32);
 
 impl Machine {
@@ -41,11 +41,25 @@ fn solve1(input: &str) -> u32 {
     score
 }
 
+fn solve2(input: &str) -> u32 {
+    let mut garbage = 0;
+    let mut state = Machine(Group, 0);
+    for c in input.chars() {
+        let next = state.next(c);
+        if next == state && state.0 == Garbage {
+            garbage += 1;
+        }
+        state = next;
+    }
+    garbage
+}
+
 fn main() {
     let mut input = String::new();
     io::stdin().read_to_string(&mut input).unwrap();
 
     println!("Part 1: {}", solve1(input.trim()));
+    println!("Part 2: {}", solve2(input.trim()));
 }
 
 #[test]
@@ -58,4 +72,15 @@ fn part1() {
     assert_eq!(9, solve1("{{<ab>},{<ab>},{<ab>},{<ab>}}"));
     assert_eq!(9, solve1("{{<!!>},{<!!>},{<!!>},{<!!>}}"));
     assert_eq!(3, solve1("{{<a!>},{<a!>},{<a!>},{<ab>}}"));
+}
+
+#[test]
+fn part2() {
+    assert_eq!(0, solve2("<>"));
+    assert_eq!(17, solve2("<random characters>"));
+    assert_eq!(3, solve2("<<<<>"));
+    assert_eq!(2, solve2("<{!>}>"));
+    assert_eq!(0, solve2("<!!>"));
+    assert_eq!(0, solve2("<!!!>>"));
+    assert_eq!(10, solve2("<{o\"i!a,<{i<a>"));
 }
