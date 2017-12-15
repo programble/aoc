@@ -4,6 +4,10 @@ use std::io::{self, Read};
 struct Hex(i32, i32, i32);
 
 impl Hex {
+    fn dist(self) -> i32 {
+        (self.0.abs() + self.1.abs() + self.2.abs()) / 2
+    }
+
     fn mov(self, dir: &str) -> Self {
         let Hex(x, y, z) = self;
         match dir {
@@ -23,7 +27,19 @@ fn solve1(input: &str) -> i32 {
     for dir in input.split(',') {
         hex = hex.mov(dir);
     }
-    (hex.0.abs() + hex.1.abs() + hex.2.abs()) / 2
+    hex.dist()
+}
+
+fn solve2(input: &str) -> i32 {
+    let mut hex = Hex(0, 0, 0);
+    let mut max = 0;
+    for dir in input.split(',') {
+        hex = hex.mov(dir);
+        if hex.dist() > max {
+            max = hex.dist()
+        }
+    }
+    max
 }
 
 fn main() {
@@ -31,6 +47,7 @@ fn main() {
     io::stdin().read_to_string(&mut input).unwrap();
 
     println!("Part 1: {}", solve1(input.trim()));
+    println!("Part 2: {}", solve2(input.trim()));
 }
 
 #[test]
