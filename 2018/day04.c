@@ -42,4 +42,14 @@ int main() {
 		maxMin = m;
 	}
 	printf("%u\n", maxID * maxMin);
+	maxID = maxMin = maxSleep = 0;
+	for (uint i = 0; i < Len; ++i) {
+		for (uint m = 0; m < 60; ++m) {
+			if (guards[i][m] < maxSleep) continue;
+			maxSleep = guards[i][m];
+			maxMin = m;
+			maxID = i;
+		}
+	}
+	printf("%u\n", maxID * maxMin);
 }
