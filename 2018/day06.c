@@ -49,4 +49,16 @@ int main() {
 		if (area[i] > max) max = area[i];
 	}
 	printf("%d\n", max);
+
+	int size = 0;
+	for (int x = 0; x <= maxX; ++x) {
+		for (int y = 0; y <= maxY; ++y) {
+			int sum = 0;
+			for (int i = 0; i < len; ++i) {
+				sum += dist((struct Point) { x, y }, points[i]);
+			}
+			if (sum < 10000) size++;
+		}
+	}
+	printf("%d\n", size);
 }
