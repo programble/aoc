@@ -24,4 +24,33 @@ int main() {
 		}
 	}
 	printf("\n");
+
+	uint time = 0;
+	uint prog = 0;
+	uint done = 0;
+	struct {
+		uint step;
+		uint time;
+	} work[5] = {0};
+	while (done != (1 << 26) - 1) {
+		for (uint i = 0; i < 26; ++i) {
+			if (done & (1 << i)) continue;
+			if (prog & (1 << i)) continue;
+			if ((deps[i] & done) != deps[i]) continue;
+			for (uint w = 0; w < 5; ++w) {
+				if (work[w].time) continue;
+				work[w].step = (1 << i);
+				work[w].time = 61 + i;
+				prog |= work[w].step;
+				break;
+			}
+		}
+		for (uint w = 0; w < 5; ++w) {
+			if (work[w].time && --work[w].time) continue;
+			done |= work[w].step;
+			prog &= ~work[w].step;
+		}
+		time++;
+	}
+	printf("%u\n", time);
 }
