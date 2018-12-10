@@ -18,6 +18,7 @@ int main() {
 		len++;
 	}
 	int minX, minY, maxX, maxY;
+	int secs = 0;
 	do {
 		minX = minY = INT_MAX;
 		maxX = maxY = INT_MIN;
@@ -29,6 +30,7 @@ int main() {
 			if (points[i].x > maxX) maxX = points[i].x;
 			if (points[i].y > maxY) maxY = points[i].y;
 		}
+		secs++;
 	} while (maxY - minY > 9);
 	for (int y = minY; y <= maxY; ++y) {
 		for (int x = minX; x <= maxX; ++x) {
@@ -40,4 +42,5 @@ int main() {
 		}
 		printf("\n");
 	}
+	printf("%d\n", secs);
 }
