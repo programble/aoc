@@ -35,4 +35,25 @@ int main() {
 		}
 	}
 	printf("%u,%u\n", maxX + 1, maxY + 1);
+
+	max = INT_MIN;
+	uint maxSize = 0;
+	for (uint size = 1; size <= 300; ++size) {
+		for (uint y = 0; y < 300 - size; ++y) {
+			for (uint x = 0; x < 300 - size; ++x) {
+				int power = 0;
+				for (uint i = 0; i < size; ++i) {
+					for (uint j = 0; j < size; ++j) {
+						power += cells[y + i][x + j];
+					}
+				}
+				if (power < max) continue;
+				max = power;
+				maxSize = size;
+				maxY = y;
+				maxX = x;
+			}
+		}
+	}
+	printf("%u,%u,%u\n", maxX + 1, maxY + 1, maxSize);
 }
