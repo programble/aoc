@@ -10,14 +10,11 @@ struct Cell {
 	char track;
 	char cart;
 	char turn;
-};
-
-struct Map {
-	struct Cell cells[200][200];
+	char done;
 };
 
 int main() {
-	struct Map map;
+	struct Cell map[200][200];
 	memset(&map, 0, sizeof(map));
 	uint y = 0, x = 0;
 	char ch;
@@ -26,34 +23,36 @@ int main() {
 			y++;
 			x = 0;
 		} else if (ch == '^' || ch == 'v') {
-			map.cells[y][x++] = (struct Cell) { '|', ch, '[' };
+			map[y][x++] = (struct Cell) { '|', ch, '[', 0 };
 		} else if (ch == '<' || ch == '>') {
-			map.cells[y][x++] = (struct Cell) { '-', ch, '[' };
+			map[y][x++] = (struct Cell) { '-', ch, '[', 0 };
 		} else {
-			map.cells[y][x++].track = ch;
+			map[y][x++].track = ch;
 		}
 	}
 
 	for (;;) {
-		struct Map next = map;
 		for (y = 0; y < 200; ++y) {
 			for (x = 0; x < 200; ++x) {
-				if (!map.cells[y][x].cart) continue;
-				next.cells[y][x].cart = 0;
+				if (!map[y][x].cart || map[y][x].done) continue;
 				uint ny = y, nx = x;
-				switch (map.cells[y][x].cart) {
+				switch (map[y][x].cart) {
 					break; case '^': ny--;
 					break; case 'v': ny++;
 					break; case '<': nx--;
 					break; case '>': nx++;
 				}
-				struct Cell *cell = &next.cells[ny][nx];
-				if (cell->cart) {
+				if (map[ny][nx].cart) {
 					printf("%u,%u\n", nx, ny);
-					exit(EXIT_SUCCESS);
+					map[y][x].cart = 0;
+					map[ny][nx].cart = 0;
+					continue;
 				}
-				cell->cart = map.cells[y][x].cart;
-				cell->turn = map.cells[y][x].turn;
+				map[ny][nx].cart = map[y][x].cart;
+				map[ny][nx].turn = map[y][x].turn;
+				map[ny][nx].done = 1;
+				map[y][x].cart = 0;
+				struct Cell *cell = &map[ny][nx];
 				switch (T(cell->cart, cell->track)) {
 					break; case T('^', '/'):  cell->cart = '>';
 					break; case T('^', '\\'): cell->cart = '<';
@@ -86,6 +85,19 @@ int main() {
 				}
 			}
 		}
-		map = next;
+		uint carts = 0;
+		for (y = 0; y < 200; ++y) {
+			for (x = 0; x < 200; ++x) {
+				if (map[y][x].cart) carts++;
+				map[y][x].done = 0;
+			}
+		}
+		if (carts == 1) break;
+	}
+
+	for (y = 0; y < 200; ++y) {
+		for (x = 0; x < 200; ++x) {
+			if (map[y][x].cart) printf("%u,%u\n", x, y);
+		}
 	}
 }
