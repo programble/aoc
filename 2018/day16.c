@@ -88,19 +88,10 @@ static const struct {
 	{ "eqrr", eqrr },
 };
 
-static uint card(Set set) {
-	uint pop = 0;
-	while (set) {
-		if (set & 1) pop++;
-		set >>= 1;
-	}
-	return pop;
-}
-
 int main(void) {
-	Set opcodes[16];
+	Set codes[16];
 	for (uint i = 0; i < 16; ++i) {
-		opcodes[i] = 0xFFFF;
+		codes[i] = 0xFFFF;
 	}
 
 	uint samples = 0;
@@ -123,10 +114,29 @@ int main(void) {
 			if (cpuEq(result, after)) {
 				count++;
 			} else {
-				opcodes[code] &= ~(1 << i);
+				codes[code] &= ~(1 << i);
 			}
 		}
 		if (count >= 3) samples++;
 	}
 	printf("%u\n", samples);
+
+	Set known = 0;
+	while (known != 0xFFFF) {
+		for (uint i = 0; i < 16; ++i) {
+			if (__builtin_popcount(codes[i]) == 1) {
+				known |= codes[i];
+			} else {
+				codes[i] &= ~known;
+			}
+		}
+	}
+
+	struct CPU cpu = { .r = { 0, 0, 0, 0 } };
+	while (!feof(stdin)) {
+		uint code, a, b, c;
+		scanf("%u %u %u %u\n", &code, &a, &b, &c);
+		cpu = Ops[__builtin_ctz(codes[code])].fn(cpu, a, b, c);
+	}
+	printf("%u\n", cpu.r[0]);
 }
