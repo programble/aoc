@@ -1,5 +1,7 @@
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 typedef unsigned uint;
 
@@ -52,6 +54,42 @@ static struct Map step(struct Map prev) {
 	return next;
 }
 
+static uint value(struct Map map) {
+	uint wood = 0, lumber = 0;
+	for (uint y = 0; y < 50; ++y) {
+		for (uint x = 0; x < 50; ++x) {
+			if (map.acres[y][x] == '|') wood++;
+			if (map.acres[y][x] == '#') lumber++;
+		}
+	}
+	return wood * lumber;
+}
+
+enum { RingLen = 64 };
+static_assert(!(RingLen & (RingLen - 1)), "power of two");
+
+static struct {
+	struct Map buf[RingLen];
+	uint end;
+} ring;
+
+static struct Map *ringMap(uint i) {
+	return &ring.buf[(ring.end + i) & (RingLen - 1)];
+}
+
+static void ringPush(struct Map map) {
+	*ringMap(0) = map;
+	ring.end++;
+}
+
+static uint ringFind(struct Map map) {
+	uint i;
+	for (i = 0; i < RingLen; ++i) {
+		if (!memcmp(ringMap(i), &map, sizeof(map))) break;
+	}
+	return i;
+}
+
 int main(void) {
 	struct Map map;
 	for (uint y = 0; y < 50; ++y) {
@@ -61,12 +99,16 @@ int main(void) {
 	for (uint i = 0; i < 10; ++i) {
 		map = step(map);
 	}
-	uint wood = 0, lumber = 0;
-	for (uint y = 0; y < 50; ++y) {
-		for (uint x = 0; x < 50; ++x) {
-			if (map.acres[y][x] == '|') wood++;
-			if (map.acres[y][x] == '#') lumber++;
-		}
+	printf("%u\n", value(map));
+
+	uint i;
+	for (i = 11; i < 1000000000; ++i) {
+		map = step(map);
+		if (ringFind(map) < RingLen) break;
+		ringPush(map);
 	}
-	printf("%u\n", wood * lumber);
+	uint skip = ringFind(map);
+	uint period = RingLen - skip;
+	uint final = skip + (1000000000 - i) % period;
+	printf("%u\n", value(*ringMap(final)));
 }
