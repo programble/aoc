@@ -78,10 +78,13 @@ int main(void) {
 	draw();
 
 	uint count = 0;
+	uint settled = 0;
 	for (uint y = minY; y <= maxY; ++y) {
 		for (uint x = 0; x < 2048; ++x) {
 			if (map[y][x] != '.' && map[y][x] != '#') count++;
+			if (map[y][x] == '~') settled++;
 		}
 	}
 	printf("%u\n", count);
+	printf("%u\n", settled);
 }
